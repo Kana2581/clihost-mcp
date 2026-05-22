@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+.installed.cfg
+pip-wheel-metadata/
+
+# Virtualenvs / dependency caches
+.venv/
+venv/
+env/
+.python-version
+.uv-cache/
+
+# Test / coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+
+# Type checkers / linters
+.mypy_cache/
+.pyright/
+.ruff_cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# cli_mcp runtime artifacts
+runs/
+*.log
+
+# Local-only / user-specific configs that must never be committed
+.cli_mcp/
+config.yaml
+config.yml
+*.local.yaml
+secrets.yaml
+
+# Claude Code local state
+.claude/
+CLAUDE.local.md

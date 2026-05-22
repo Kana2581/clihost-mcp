@@ -1,0 +1,111 @@
+# cli_mcp example configuration.
+# Copy to ~/.cli_mcp/config.yaml and edit, or pass --config <path> to cli-mcp.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# !!  SECURITY WARNING — READ BEFORE USING THIS FILE AS-IS  !!
+#
+# The default_args below for `claude` and `codex` include
+# --dangerously-skip-permissions / --dangerously-bypass-approvals-and-sandbox.
+# These flags TURN OFF the spawned CLI's per-action approval prompts, so the
+# CLI is free to read, write, delete, run shell commands, and call the network
+# inside its working directory with your full user privileges. There is no
+# fine-grained gate left inside the CLI itself.
+#
+# This is the right default for *unattended* MCP usage (interactive prompts
+# would otherwise deadlock the call), but it means cli-mcp itself becomes the
+# entire trust boundary. Make sure:
+#   1. `defaults.cwd_allowlist` restricts where these CLIs can act.
+#   2. You control who can call the MCP tools (HTTP transport => set auth_token).
+#   3. You only point cli-mcp at directories you'd be OK letting an LLM rewrite.
+#
+# If you'd rather have the CLI refuse anything beyond its safe baseline, DELETE
+# those flags from `default_args` below. Calls that need approval will then
+# hang until they time out — that's the price of safety in a non-interactive
+# wrapper.
+# ─────────────────────────────────────────────────────────────────────────────
+
+defaults:
+  timeout_sec: 120                  # per-call default when caller does not pass timeout_sec
+  max_timeout_sec: 1800             # hard ceiling for any single tool call (30 min — codex agentic mode can take a while)
+  max_output_bytes: 102400          # 100 KiB per stream; excess goes to runs_dir
+  # Where tool calls run when the caller does NOT supply a `cwd` parameter.
+  # Without this, the subprocess inherits cli-mcp's cwd (under MCP stdio spawn
+  # that's whatever directory the MCP client launched cli-mcp from). Validated
+  # at startup: must exist, be a directory, and (if cwd_allowlist is set) be
+  # inside the allowlist.
+  default_cwd: "/path/to/your/sandbox"
+  # If non-empty, every tool call's `cwd` must be inside one of these prefixes.
+  # Strongly recommended — see the SECURITY WARNING above. Without an allowlist
+  # and with the dangerous flags below enabled, a caller can target any
+  # directory on disk.
+  cwd_allowlist:
+    - "/path/to/your/sandbox"
+    - "/path/to/your/projects"
+  # Only these env vars (plus a small built-in safe set: PATH, HOME, etc.)
+  # propagate to subprocesses. Leave empty to inherit the full parent env.
+  env_passthrough:
+    - ANTHROPIC_API_KEY
+    - OPENAI_API_KEY
+  # Outbound HTTP proxy spliced into every spawned CLI's env. Use this when
+  # Anthropic / OpenAI APIs are geo-blocked from your network: an upstream
+  # `403 Request not allowed` means the request landed on their servers from
+  # a disallowed region, and a proxy in an allowed region fixes it. Always
+  # propagates regardless of env_passthrough.
+  #   shorthand:  proxy: "http://127.0.0.1:7890"
+  #   full form:  proxy: { url: "http://127.0.0.1:7890", no_proxy: "localhost,127.0.0.1" }
+  # proxy: "http://127.0.0.1:7890"
+  # runs_dir: "~/.cli_mcp/runs"  # default if unset
+
+adapters:
+  claude:
+    enabled: true
+    binary: claude                  # change if `claude` isn't on PATH
+    # --output-format json: machine-parseable result so the adapter can
+    #   extract `result` / `session_id` / `total_cost_usd`.
+    # --dangerously-skip-permissions: ⚠ DANGEROUS. Suppresses the interactive
+    #   per-tool approval prompt that would otherwise hang a non-interactive
+    #   MCP call. Claude runs with your full user privileges inside
+    #   default_cwd — only enable when cli-mcp itself is the trust boundary
+    #   (cwd_allowlist + you control who can call claude_run). Drop this flag
+    #   to force read-only behaviour.
+    default_args:
+      - "--output-format"
+      - "json"
+      - "--dangerously-skip-permissions"
+  codex:
+    enabled: true
+    binary: codex
+    # --skip-git-repo-check: codex refuses to run outside a git repo without it.
+    # --dangerously-bypass-approvals-and-sandbox: ⚠ DANGEROUS. Same risk class
+    #   as Claude's --dangerously-skip-permissions above — codex will execute
+    #   arbitrary shell commands without prompting. Drop this flag if you want
+    #   the per-action approval gate (and accept that MCP calls may hang).
+    default_args:
+      - "--skip-git-repo-check"
+      - "--dangerously-bypass-approvals-and-sandbox"
+  shell:
+    enabled: false                  # opt-in; allowlist is mandatory when enabled
+    command_allowlist:
+      - git
+      - ls
+      - dir
+      - cat
+      - type
+      - python
+      - node
+      - npm
+
+# Define extra CLIs without writing Python. Each entry becomes a
+# `<name>_run` MCP tool. `{prompt}` is substituted with the caller's prompt.
+custom_adapters:
+  - name: gemini
+    description: "Google Gemini CLI (non-interactive)"
+    argv_template: ["gemini", "-p", "{prompt}"]
+    enabled: false
+
+transport:
+  default: stdio
+  http:
+    host: 127.0.0.1
+    port: 8765
+    auth_token: null                # required when binding non-localhost
