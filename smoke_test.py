@@ -6,8 +6,8 @@ import json
 
 from fastmcp import Client
 
-from cli_mcp.config import Config
-from cli_mcp.server import build_server
+from clihost_mcp.config import Config
+from clihost_mcp.server import build_server
 
 
 async def main():

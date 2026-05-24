@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-`cli-mcp` 是一个 Python 3.10+ 项目，用 FastMCP 提供 MCP server，把本地 CLI 暴露为 MCP tools。README 中列出的典型目标包括 Claude Code、Codex CLI、受 allowlist 约束的 shell 命令，以及 YAML 中声明的自定义 CLI。
+`clihost-mcp` 是一个 Python 3.10+ 项目，用 FastMCP 提供 MCP server，把本地 CLI 暴露为 MCP tools。README 中列出的典型目标包括 Claude Code、Codex CLI、受 allowlist 约束的 shell 命令，以及 YAML 中声明的自定义 CLI。
 
 项目边界集中在安全、可控地启动本地子进程：
 
@@ -24,7 +24,7 @@
 ├── pyproject.toml
 ├── config.example.yaml
 ├── smoke_test.py
-├── src/cli_mcp/
+├── src/clihost_mcp/
 │   ├── __init__.py
 │   ├── cli.py
 │   ├── config.py
@@ -64,38 +64,38 @@ pip install -e ".[dev]"
 从源码运行：
 
 ```powershell
-uv run --directory "D:\project is all you need\cli_mcp" cli-mcp
+uv run --directory "/path/to/clihost_mcp" clihost-mcp
 ```
 
 安装或强制重装本地工具：
 
 ```powershell
-uv tool install --from "D:\project is all you need\cli_mcp" cli-mcp
-uv tool install --force --from "D:\project is all you need\cli_mcp" cli-mcp
+uv tool install --from "/path/to/clihost_mcp" clihost-mcp
+uv tool install --force --from "/path/to/clihost_mcp" clihost-mcp
 ```
 
 打印解析后的配置：
 
 ```powershell
-cli-mcp --print-config
+clihost-mcp --print-config
 ```
 
 指定配置文件：
 
 ```powershell
-cli-mcp --config "C:\Users\you\my_cli_mcp.yaml"
+clihost-mcp --config "C:\Users\you\my_clihost_mcp.yaml"
 ```
 
 HTTP 模式：
 
 ```powershell
-cli-mcp --transport http --host 127.0.0.1 --port 8765 --auth-token YOUR_TOKEN
+clihost-mcp --transport http --host 127.0.0.1 --port 8765 --auth-token YOUR_TOKEN
 ```
 
 命令行覆盖默认运行目录和 timeout：
 
 ```powershell
-cli-mcp --default-cwd "D:\some\project" --default-timeout-sec 600 --max-timeout-sec 1800
+clihost-mcp --default-cwd "D:\some\project" --default-timeout-sec 600 --max-timeout-sec 1800
 ```
 
 运行测试：
@@ -114,8 +114,8 @@ pytest
 
 ## 配置要点
 
-- 配置解析顺序：`--config` > `CLI_MCP_CONFIG` > `~/.cli_mcp/config.yaml` > 内置默认值。
-- `config.example.yaml` 可复制到 `~/.cli_mcp/config.yaml`，也可通过 `--config <path>` 指定。
+- 配置解析顺序：`--config` > `CLIHOST_MCP_CONFIG` > `~/.clihost_mcp/config.yaml` > 内置默认值。
+- `config.example.yaml` 可复制到 `~/.clihost_mcp/config.yaml`，也可通过 `--config <path>` 指定。
 - 代码内置默认值在 README 中列为：`timeout_sec=120`、`max_timeout_sec=600`、`max_output_bytes=102400`、`shell.enabled=false`。
 - `config.example.yaml` 示例中 `max_timeout_sec` 为 `1800`，用于较长的 agentic CLI 调用。
 - `defaults.default_cwd` 是调用方未传 `cwd` 时的运行目录；启动时要求存在且是目录。如果 `cwd_allowlist` 非空，它还必须位于 allowlist 内。

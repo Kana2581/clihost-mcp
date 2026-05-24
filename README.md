@@ -1,4 +1,4 @@
-# cli_mcp
+# clihost-mcp
 
 An MCP server that exposes local CLIs — Claude Code, Codex CLI, shell
 commands, and any custom CLI you declare in YAML — as MCP tools.
@@ -17,10 +17,10 @@ Requires Python 3.10+.
 > prompts** — they're necessary for unattended MCP usage (interactive
 > prompts would otherwise deadlock the call), but they mean the spawned CLI
 > can read, write, delete and execute anything inside its working directory
-> with your full user privileges. cli-mcp becomes the entire trust boundary.
+> with your full user privileges. clihost-mcp becomes the entire trust boundary.
 >
 > Before running this in production: set `defaults.cwd_allowlist`, gate the
-> HTTP transport with `auth_token`, and only point cli-mcp at directories
+> HTTP transport with `auth_token`, and only point clihost-mcp at directories
 > you'd be OK letting an LLM rewrite. See [Security model](#security-model)
 > below for the full threat model and how to opt out of the dangerous
 > defaults.
@@ -35,26 +35,26 @@ Pick **one** of the following.
 
 ```powershell
 # install uv once: https://docs.astral.sh/uv/
-uv tool install --from "D:\project is all you need\cli_mcp" cli-mcp
+uv tool install --from "/path/to/clihost_mcp" clihost-mcp
 ```
 
-This puts `cli-mcp` on PATH (under `~/.local/bin`) in its own isolated
+This puts `clihost-mcp` on PATH (under `~/.local/bin`) in its own isolated
 environment. To upgrade after editing the code, re-run with `--force`.
 
 If you'd rather not install at all and just run from the source tree, uv
 can do that too:
 
 ```powershell
-uv run --directory "D:\project is all you need\cli_mcp" cli-mcp
+uv run --directory "/path/to/clihost_mcp" clihost-mcp
 ```
 
 ### Option B — pip
 
 ```powershell
-pip install -e "D:\project is all you need\cli_mcp"
+pip install -e "/path/to/clihost_mcp"
 ```
 
-Either way, `cli-mcp --print-config` should now print the resolved config.
+Either way, `clihost-mcp --print-config` should now print the resolved config.
 
 ---
 
@@ -70,15 +70,15 @@ file location differs.
 | Claude Code (CLI) | use `claude mcp add` (see below) or `~/.claude/settings.json` |
 | Cline / Continue / others | their own JSON, same `mcpServers` shape |
 
-### Config — when `cli-mcp` is already on PATH
+### Config — when `clihost-mcp` is already on PATH
 
 After Option A or B above:
 
 ```json
 {
   "mcpServers": {
-    "cli-mcp": {
-      "command": "cli-mcp"
+    "clihost-mcp": {
+      "command": "clihost-mcp"
     }
   }
 }
@@ -92,13 +92,13 @@ the cached `.venv` after that:
 ```json
 {
   "mcpServers": {
-    "cli-mcp": {
+    "clihost-mcp": {
       "command": "uv",
       "args": [
         "--directory",
-        "D:\\project is all you need\\cli_mcp",
+        "/path/to/clihost_mcp",
         "run",
-        "cli-mcp"
+        "clihost-mcp"
       ]
     }
   }
@@ -110,9 +110,9 @@ the cached `.venv` after that:
 ```json
 {
   "mcpServers": {
-    "cli-mcp": {
-      "command": "cli-mcp",
-      "args": ["--config", "C:\\Users\\you\\my_cli_mcp.yaml"],
+    "clihost-mcp": {
+      "command": "clihost-mcp",
+      "args": ["--config", "C:\\Users\\you\\my_clihost_mcp.yaml"],
       "env": {
         "ANTHROPIC_API_KEY": "sk-ant-...",
         "OPENAI_API_KEY": "sk-..."
@@ -122,7 +122,7 @@ the cached `.venv` after that:
 }
 ```
 
-`env` here is forwarded to the `cli-mcp` process, which in turn passes
+`env` here is forwarded to the `clihost-mcp` process, which in turn passes
 through whatever `defaults.env_passthrough` whitelists to the spawned CLI
 subprocesses.
 
@@ -131,14 +131,14 @@ subprocesses.
 Instead of hand-editing JSON, register from the terminal:
 
 ```powershell
-# if cli-mcp is on PATH
-claude mcp add cli-mcp -- cli-mcp
+# if clihost-mcp is on PATH
+claude mcp add clihost-mcp -- clihost-mcp
 
 # or via uv, no install
-claude mcp add cli-mcp -- uv --directory "D:\project is all you need\cli_mcp" run cli-mcp
+claude mcp add clihost-mcp -- uv --directory "/path/to/clihost_mcp" run clihost-mcp
 ```
 
-After restart, in any Claude Code session, `/mcp` will list `cli-mcp` and
+After restart, in any Claude Code session, `/mcp` will list `clihost-mcp` and
 you can call any of its tools.
 
 ---
@@ -163,7 +163,7 @@ output is parseable.
 ## HTTP mode (for remote agents)
 
 ```powershell
-cli-mcp --transport http --host 127.0.0.1 --port 8765 --auth-token YOUR_TOKEN
+clihost-mcp --transport http --host 127.0.0.1 --port 8765 --auth-token YOUR_TOKEN
 ```
 
 Clients call the MCP endpoint with `Authorization: Bearer YOUR_TOKEN`.
@@ -174,9 +174,9 @@ startup.
 
 ## Configuration
 
-Copy `config.example.yaml` to `~/.cli_mcp/config.yaml` (or pass
-`--config <path>`, or set `$CLI_MCP_CONFIG`). Resolution order is:
-`--config` > env var > `~/.cli_mcp/config.yaml` > built-in defaults.
+Copy `config.example.yaml` to `~/.clihost_mcp/config.yaml` (or pass
+`--config <path>`, or set `$CLIHOST_MCP_CONFIG`). Resolution order is:
+`--config` > env var > `~/.clihost_mcp/config.yaml` > built-in defaults.
 
 Highlights:
 
@@ -207,8 +207,8 @@ cwd resolution order, per call:
    outside.
 2. Otherwise `defaults.default_cwd` from the config (already validated at
    startup).
-3. Otherwise inherit `cli-mcp`'s own cwd — which under MCP stdio spawn is
-   whatever directory the MCP client launched cli-mcp from (usually the
+3. Otherwise inherit `clihost-mcp`'s own cwd — which under MCP stdio spawn is
+   whatever directory the MCP client launched clihost-mcp from (usually the
    client's current project dir). This last fallback is often **not** what
    you want — surprise behaviour like "codex ended up in my Claude Code
    project dir" comes from skipping steps 1 & 2.
@@ -228,7 +228,7 @@ defaults:
 ### Outbound proxy
 
 Anthropic and OpenAI geo-block a few regions (mainland China among them).
-The symptom from inside `cli-mcp` looks like this:
+The symptom from inside `clihost-mcp` looks like this:
 
 ```json
 {
@@ -242,7 +242,7 @@ A 403 — not a network timeout — means the request **did** reach the
 upstream, but the source IP wasn't allowed. Pointing the spawned CLI at a
 local proxy that exits in an allowed region fixes it.
 
-Configure once in `~/.cli_mcp/config.yaml`:
+Configure once in `~/.clihost_mcp/config.yaml`:
 
 ```yaml
 defaults:
@@ -277,17 +277,17 @@ Important details:
 - **Pick a port that matches your proxy client.** Clash defaults to `7890`,
   v2rayN's HTTP port is usually `10809`, Shadowsocks's local HTTP bridge
   varies. Use whatever `netstat -ano | findstr LISTEN` shows.
-- **Restart your MCP client after editing.** `cli-mcp` is launched once
+- **Restart your MCP client after editing.** `clihost-mcp` is launched once
   per MCP-client session; Python does not hot-reload, so an edit to
   `config.yaml` only takes effect after restarting Claude Desktop / Cursor /
   Claude Code / etc.
-- **`cli-mcp --print-config` shows the resolved proxy block** — use it to
+- **`clihost-mcp --print-config` shows the resolved proxy block** — use it to
   confirm YAML parsed the way you expected before restarting the client.
-- The setting only affects subprocesses `cli-mcp` spawns. `cli-mcp` itself
+- The setting only affects subprocesses `clihost-mcp` spawns. `clihost-mcp` itself
   doesn't make outbound calls, so its own env is unaffected.
 
 If you'd rather not maintain a per-project YAML at all, pass overrides
-directly on the cli-mcp command line. All three are validated at startup.
+directly on the clihost-mcp command line. All three are validated at startup.
 
 | Flag | Overrides | Notes |
 | --- | --- | --- |
@@ -300,11 +300,11 @@ Typical MCP-client wiring for a project that needs longer codex runs:
 ```json
 {
   "mcpServers": {
-    "cli-mcp": {
+    "clihost-mcp": {
       "command": "uv",
       "args": [
-        "--directory", "/path/to/cli_mcp",
-        "run", "cli-mcp",
+        "--directory", "/path/to/clihost_mcp",
+        "run", "clihost-mcp",
         "--default-cwd", "/path/to/your/project",
         "--default-timeout-sec", "600",
         "--max-timeout-sec", "1800"
@@ -324,7 +324,7 @@ custom_adapters:
 ```
 
 Registers a `gemini_run` MCP tool — no code changes; restart only the
-`cli-mcp` process (your MCP client will reconnect automatically).
+`clihost-mcp` process (your MCP client will reconnect automatically).
 
 ---
 
@@ -350,13 +350,13 @@ themselves. With either flag set, the spawned CLI can:
 - Hit the network (proxy-routed if `defaults.proxy` is set).
 
 **Why ship them on?** Without them, the CLI will block on stdin waiting for
-human approval — but cli-mcp gives the child `DEVNULL` for stdin (the
+human approval — but clihost-mcp gives the child `DEVNULL` for stdin (the
 parent's stdin is the MCP JSON-RPC pipe, which the child must not touch).
 So the call hangs until it hits the timeout. There's no middle ground in a
 non-interactive wrapper: either the child has full power or it deadlocks
 on its first non-trivial action.
 
-**Threat model.** With dangerous flags on, **cli-mcp is the entire trust
+**Threat model.** With dangerous flags on, **clihost-mcp is the entire trust
 boundary** — there is nothing safer downstream of it. That puts the
 responsibility on you to:
 
@@ -398,7 +398,7 @@ probably want to combine this with a smaller `defaults.timeout_sec` (say
   is the one exception: it's injected unconditionally because it's network
   plumbing, not a secret.
 - Output truncation at 100 KiB/stream (configurable). Truncated runs
-  persist full output under `~/.cli_mcp/runs/<run_id>/` and the path is
+  persist full output under `~/.clihost_mcp/runs/<run_id>/` and the path is
   returned to the caller.
 
 ---
@@ -411,7 +411,7 @@ probably want to combine this with a smaller `defaults.timeout_sec` (say
 - **Claude Code** authentication: `claude -p` reuses the OAuth/credential
   state from your interactive login. If you get `403 Request not
   allowed`, the issue is on the `claude` CLI side (account/region/auth)
-  not in cli_mcp — verify with a direct `claude -p "test"` in your shell.
+  not in clihost_mcp — verify with a direct `claude -p "test"` in your shell.
 - **Windows + `.cmd` shims** (npm-installed CLIs like `codex.cmd`):
   handled automatically — the runner resolves bare names via
   `shutil.which`, which respects PATHEXT.
@@ -421,12 +421,12 @@ probably want to combine this with a smaller `defaults.timeout_sec` (say
 ## Layout
 
 ```
-src/cli_mcp/
+src/clihost_mcp/
 ├── server.py       # FastMCP wiring; dynamic tool registration
 ├── runner.py       # subprocess execution (timeout, truncation, PATHEXT)
 ├── config.py       # YAML + Pydantic
 ├── registry.py     # built-in + custom adapter assembly
-├── cli.py          # `cli-mcp` entry point
+├── cli.py          # `clihost-mcp` entry point
 └── adapters/
     ├── base.py
     ├── claude_code.py

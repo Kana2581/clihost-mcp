@@ -1,4 +1,4 @@
-"""`cli-mcp` command-line entry point."""
+"""`clihost-mcp` command-line entry point."""
 
 from __future__ import annotations
 
@@ -8,13 +8,13 @@ from typing import Optional
 
 from pathlib import Path
 
-from cli_mcp.config import Config, load_config
-from cli_mcp.server import run_server
+from clihost_mcp.config import Config, load_config
+from clihost_mcp.server import run_server
 
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="cli-mcp",
+        prog="clihost-mcp",
         description="MCP server that exposes local CLIs (Claude Code, Codex, shell) as tools.",
     )
     p.add_argument(
@@ -42,7 +42,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--config",
         default=None,
-        help="Path to config YAML. Defaults to $CLI_MCP_CONFIG or ~/.cli_mcp/config.yaml.",
+        help="Path to config YAML. Defaults to $CLIHOST_MCP_CONFIG or ~/.clihost_mcp/config.yaml.",
     )
     p.add_argument(
         "--default-cwd",

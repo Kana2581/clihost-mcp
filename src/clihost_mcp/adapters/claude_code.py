@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from cli_mcp.adapters.base import CLIAdapter
-from cli_mcp.runner import RunResult
+from clihost_mcp.adapters.base import CLIAdapter
+from clihost_mcp.runner import RunResult
 
 
 class ClaudeCodeAdapter(CLIAdapter):

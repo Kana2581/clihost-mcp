@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "cli-mcp"
+name = "clihost-mcp"
 version = "0.1.0"
-description = "MCP server that exposes local CLIs (Claude Code, Codex CLI, shell) as tools."
+description = "MCP server that hosts local CLIs (Claude Code, Codex CLI, shell) as MCP tools."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "cli_mcp" }]
+authors = [{ name = "clihost-mcp" }]
 dependencies = [
     "fastmcp>=2.0",
     "pydantic>=2.0",
@@ -23,10 +23,10 @@ dev = [
 ]
 
 [project.scripts]
-cli-mcp = "cli_mcp.cli:main"
+clihost-mcp = "clihost_mcp.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/cli_mcp"]
+packages = ["src/clihost_mcp"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -44,12 +44,12 @@ coverage.xml
 Thumbs.db
 desktop.ini
 
-# cli_mcp runtime artifacts
+# clihost_mcp runtime artifacts
 runs/
 *.log
 
 # Local-only / user-specific configs that must never be committed
-.cli_mcp/
+.clihost_mcp/
 config.yaml
 config.yml
 *.local.yaml

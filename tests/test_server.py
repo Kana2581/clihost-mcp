@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from cli_mcp.config import (
+from clihost_mcp.config import (
     AdaptersConfig,
     ClaudeAdapterConfig,
     CodexAdapterConfig,
@@ -12,8 +12,8 @@ from cli_mcp.config import (
     ProxyConfig,
     ShellAdapterConfig,
 )
-from cli_mcp.registry import build_registry
-from cli_mcp.server import _build_subprocess_env, _cwd_is_allowed, build_server
+from clihost_mcp.registry import build_registry
+from clihost_mcp.server import _build_subprocess_env, _cwd_is_allowed, build_server
 
 
 def test_registry_contains_enabled_builtins():

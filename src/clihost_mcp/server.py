@@ -8,10 +8,10 @@ from typing import Any, Optional
 
 from fastmcp import FastMCP
 
-from cli_mcp.adapters.base import AdapterError, CLIAdapter
-from cli_mcp.config import Config, DefaultsConfig
-from cli_mcp.registry import build_registry
-from cli_mcp.runner import filter_env, run_subprocess
+from clihost_mcp.adapters.base import AdapterError, CLIAdapter
+from clihost_mcp.config import Config, DefaultsConfig
+from clihost_mcp.registry import build_registry
+from clihost_mcp.runner import filter_env, run_subprocess
 
 
 def _build_subprocess_env(defaults: DefaultsConfig) -> Optional[dict[str, str]]:
@@ -68,7 +68,6 @@ def _make_tool(
     async def _tool(
         prompt: str,
         cwd: Optional[str] = None,
-        timeout_sec: Optional[float] = None,
         adapter_kwargs: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         # Caller-supplied cwd is validated against the allowlist; otherwise
@@ -79,9 +78,7 @@ def _make_tool(
                 "error": f"cwd {cwd!r} is not within configured cwd_allowlist",
                 "exit_code": None,
             }
-        timeout = float(timeout_sec) if timeout_sec is not None else defaults.timeout_sec
-        if timeout > defaults.max_timeout_sec:
-            timeout = defaults.max_timeout_sec
+        timeout = min(defaults.timeout_sec, defaults.max_timeout_sec)
 
         kwargs = adapter_kwargs or {}
         try:
@@ -109,7 +106,6 @@ def _make_tool(
         "Args:\n"
         "  prompt: the prompt/command to send to the CLI.\n"
         "  cwd: optional working directory (must be inside cwd_allowlist if configured).\n"
-        "  timeout_sec: optional per-call timeout (capped at 600s).\n"
         "  adapter_kwargs: optional adapter-specific parameters; "
         f"accepted keys: {sorted(adapter.extra_params.keys()) or 'none'}.\n"
     )
@@ -117,7 +113,7 @@ def _make_tool(
 
 
 def build_server(config: Config) -> FastMCP:
-    mcp = FastMCP(name="cli-mcp")
+    mcp = FastMCP(name="clihost-mcp")
     registry = build_registry(config)
 
     for adapter in registry.values():

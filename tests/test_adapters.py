@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from cli_mcp.adapters import ClaudeCodeAdapter, CodexAdapter, ShellAdapter
-from cli_mcp.adapters.base import AdapterError
+from clihost_mcp.adapters import ClaudeCodeAdapter, CodexAdapter, ShellAdapter
+from clihost_mcp.adapters.base import AdapterError
 
 
 def test_claude_basic_argv():
@@ -25,7 +25,7 @@ def test_claude_basic_argv():
 def test_claude_config_default_args_match_adapter():
     # Guard against drift between the Pydantic default and the adapter's
     # constructor fallback — they're separately maintained.
-    from cli_mcp.config import ClaudeAdapterConfig
+    from clihost_mcp.config import ClaudeAdapterConfig
 
     cfg = ClaudeAdapterConfig()
     a = ClaudeCodeAdapter(default_args=cfg.default_args)

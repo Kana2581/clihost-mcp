@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from cli_mcp.adapters import (
+from clihost_mcp.adapters import (
     CLIAdapter,
     ClaudeCodeAdapter,
     CodexAdapter,
     ShellAdapter,
 )
-from cli_mcp.config import Config, CustomAdapterConfig
+from clihost_mcp.config import Config, CustomAdapterConfig
 
 
 class _TemplateAdapter(CLIAdapter):

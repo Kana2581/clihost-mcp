@@ -6,11 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from cli_mcp.config import Config, load_config
+from clihost_mcp.config import Config, load_config
 
 
 def test_defaults_when_no_file(tmp_path: Path, monkeypatch):
-    monkeypatch.delenv("CLI_MCP_CONFIG", raising=False)
+    monkeypatch.delenv("CLIHOST_MCP_CONFIG", raising=False)
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     cfg = load_config(None)
     assert isinstance(cfg, Config)

@@ -2,8 +2,8 @@
 
 Resolution order:
 1. explicit path passed to load_config
-2. $CLI_MCP_CONFIG
-3. ~/.cli_mcp/config.yaml
+2. $CLIHOST_MCP_CONFIG
+3. ~/.clihost_mcp/config.yaml
 4. built-in defaults
 """
 
@@ -69,10 +69,10 @@ class DefaultsConfig(BaseModel):
     max_output_bytes: int = 100 * 1024
     cwd_allowlist: list[str] = Field(default_factory=list)
     env_passthrough: list[str] = Field(default_factory=list)
-    runs_dir: Optional[str] = None  # None => ~/.cli_mcp/runs
+    runs_dir: Optional[str] = None  # None => ~/.clihost_mcp/runs
     # When a tool call does not supply `cwd`, the subprocess is spawned here.
-    # If unset, the subprocess inherits cli-mcp's own cwd (which under MCP
-    # stdio spawn is whatever the MCP client launched cli-mcp from — usually
+    # If unset, the subprocess inherits clihost-mcp's own cwd (which under MCP
+    # stdio spawn is whatever the MCP client launched clihost-mcp from — usually
     # the client's current project dir, which may not be what you want).
     default_cwd: Optional[str] = None
     # Outbound proxy applied to every spawned subprocess. Either a bare URL
@@ -113,7 +113,7 @@ class ClaudeAdapterConfig(BaseModel):
     # --dangerously-skip-permissions: suppress the interactive per-tool approval
     #   prompt that would otherwise hang an MCP call forever. claude-code runs
     #   with the user's full privileges inside default_cwd — only safe because
-    #   cli-mcp itself is the trust boundary (cwd_allowlist + you control who
+    #   clihost-mcp itself is the trust boundary (cwd_allowlist + you control who
     #   can call claude_run). Drop this flag if you want claude-code to refuse
     #   anything beyond read-only.
     default_args: list[str] = Field(
@@ -186,7 +186,7 @@ class Config(BaseModel):
     def resolved_runs_dir(self) -> Path:
         if self.defaults.runs_dir:
             return Path(self.defaults.runs_dir).expanduser()
-        return Path.home() / ".cli_mcp" / "runs"
+        return Path.home() / ".clihost_mcp" / "runs"
 
     @model_validator(mode="after")
     def _validate_default_cwd(self) -> "Config":
@@ -232,10 +232,10 @@ class Config(BaseModel):
 def _candidate_paths(explicit: Optional[str]) -> list[Path]:
     if explicit:
         return [Path(explicit).expanduser()]
-    env = os.environ.get("CLI_MCP_CONFIG")
+    env = os.environ.get("CLIHOST_MCP_CONFIG")
     if env:
         return [Path(env).expanduser()]
-    return [Path.home() / ".cli_mcp" / "config.yaml"]
+    return [Path.home() / ".clihost_mcp" / "config.yaml"]
 
 
 def load_config(path: Optional[str] = None) -> Config:

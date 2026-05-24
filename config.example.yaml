@@ -1,5 +1,5 @@
-# cli_mcp example configuration.
-# Copy to ~/.cli_mcp/config.yaml and edit, or pass --config <path> to cli-mcp.
+# clihost_mcp example configuration.
+# Copy to ~/.clihost_mcp/config.yaml and edit, or pass --config <path> to clihost-mcp.
 #
 # ─────────────────────────────────────────────────────────────────────────────
 # !!  SECURITY WARNING — READ BEFORE USING THIS FILE AS-IS  !!
@@ -12,11 +12,11 @@
 # fine-grained gate left inside the CLI itself.
 #
 # This is the right default for *unattended* MCP usage (interactive prompts
-# would otherwise deadlock the call), but it means cli-mcp itself becomes the
+# would otherwise deadlock the call), but it means clihost-mcp itself becomes the
 # entire trust boundary. Make sure:
 #   1. `defaults.cwd_allowlist` restricts where these CLIs can act.
 #   2. You control who can call the MCP tools (HTTP transport => set auth_token).
-#   3. You only point cli-mcp at directories you'd be OK letting an LLM rewrite.
+#   3. You only point clihost-mcp at directories you'd be OK letting an LLM rewrite.
 #
 # If you'd rather have the CLI refuse anything beyond its safe baseline, DELETE
 # those flags from `default_args` below. Calls that need approval will then
@@ -29,8 +29,8 @@ defaults:
   max_timeout_sec: 1800             # hard ceiling for any single tool call (30 min — codex agentic mode can take a while)
   max_output_bytes: 102400          # 100 KiB per stream; excess goes to runs_dir
   # Where tool calls run when the caller does NOT supply a `cwd` parameter.
-  # Without this, the subprocess inherits cli-mcp's cwd (under MCP stdio spawn
-  # that's whatever directory the MCP client launched cli-mcp from). Validated
+  # Without this, the subprocess inherits clihost-mcp's cwd (under MCP stdio spawn
+  # that's whatever directory the MCP client launched clihost-mcp from). Validated
   # at startup: must exist, be a directory, and (if cwd_allowlist is set) be
   # inside the allowlist.
   default_cwd: "/path/to/your/sandbox"
@@ -54,7 +54,7 @@ defaults:
   #   shorthand:  proxy: "http://127.0.0.1:7890"
   #   full form:  proxy: { url: "http://127.0.0.1:7890", no_proxy: "localhost,127.0.0.1" }
   # proxy: "http://127.0.0.1:7890"
-  # runs_dir: "~/.cli_mcp/runs"  # default if unset
+  # runs_dir: "~/.clihost_mcp/runs"  # default if unset
 
 adapters:
   claude:
@@ -65,7 +65,7 @@ adapters:
     # --dangerously-skip-permissions: ⚠ DANGEROUS. Suppresses the interactive
     #   per-tool approval prompt that would otherwise hang a non-interactive
     #   MCP call. Claude runs with your full user privileges inside
-    #   default_cwd — only enable when cli-mcp itself is the trust boundary
+    #   default_cwd — only enable when clihost-mcp itself is the trust boundary
     #   (cwd_allowlist + you control who can call claude_run). Drop this flag
     #   to force read-only behaviour.
     default_args:

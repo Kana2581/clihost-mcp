@@ -5,7 +5,7 @@ from __future__ import annotations
 import shlex
 from typing import Any
 
-from cli_mcp.adapters.base import CLIAdapter, AdapterError
+from clihost_mcp.adapters.base import CLIAdapter, AdapterError
 
 
 class ShellAdapter(CLIAdapter):

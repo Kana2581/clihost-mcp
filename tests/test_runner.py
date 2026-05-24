@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from cli_mcp.runner import run_subprocess
+from clihost_mcp.runner import run_subprocess
 
 
 PYTHON = sys.executable
