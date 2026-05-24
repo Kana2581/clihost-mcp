@@ -1,0 +1,42 @@
+# Normalize line endings on commit; check out with the OS-native ending.
+# Without this, a Windows-only repo accumulates CRLF in the index and Linux
+# contributors see spurious whole-file diffs the first time they save.
+* text=auto eol=lf
+
+# Explicit text files (always LF in the repo, regardless of detection).
+*.py     text eol=lf
+*.toml   text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.md     text eol=lf
+*.json   text eol=lf
+*.cfg    text eol=lf
+*.txt    text eol=lf
+*.lock   text eol=lf
+.gitignore       text eol=lf
+.gitattributes   text eol=lf
+LICENSE          text eol=lf
+Makefile         text eol=lf
+
+# Shell scripts must be LF even on Windows or bash refuses to run them.
+*.sh     text eol=lf
+
+# Windows-native scripts get CRLF.
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+*.ps1    text eol=crlf
+
+# Binary — never normalize.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.pdf    binary
+*.zip    binary
+*.gz     binary
+*.tar    binary
+*.whl    binary
+*.so     binary
+*.dll    binary
+*.pyd    binary
