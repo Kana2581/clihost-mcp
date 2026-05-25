@@ -1,5 +1,7 @@
 # clihost-mcp
 
+**English** | [中文](README.zh-CN.md)
+
 An MCP server that exposes local CLIs — Claude Code, Codex CLI, shell
 commands, and any custom CLI you declare in YAML — as MCP tools.
 

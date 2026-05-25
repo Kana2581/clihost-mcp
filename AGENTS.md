@@ -6,16 +6,17 @@
 
 项目边界集中在安全、可控地启动本地子进程：
 
-- 子进程参数应保持为 argv list，不要引入 `shell=True`。
+- 子进程参数必须保持为 argv list；不要引入 `shell=True`，不要把命令拼成 shell 字符串执行。
 - `cwd` 可通过 `defaults.cwd_allowlist` 约束；`defaults.default_cwd` 会在启动时校验。
-- `shell` adapter 默认禁用；启用时需要显式维护 `command_allowlist`。
+- `shell` adapter 默认禁用；启用时必须维护 `command_allowlist`。
 - 单次调用有 timeout，调用方传入值会受 `defaults.max_timeout_sec` 限制。
-- HTTP transport 绑定非 localhost 时必须配置 auth token；有 token 时请求需携带 `Authorization: Bearer <token>`。
+- HTTP transport 绑定非 localhost 时必须配置 auth token；配置 token 后请求需携带 `Authorization: Bearer <token>`。
 - stdout/stderr 按 `defaults.max_output_bytes` 截断；截断时完整输出可写入 runs 目录，并把路径返回给调用方。
+- `config.example.yaml` 默认包含 Claude Code 和 Codex CLI 的危险跳过审批参数；生产使用前应设置 `cwd_allowlist`、HTTP auth token，并只指向可接受被 LLM 修改的目录。
 
 ## 仓库结构
 
-基于 README、当前 AGENTS 和已列出的文件名：
+基于 README、`pyproject.toml`、`config.example.yaml`、当前 AGENTS，以及当前 `src/clihost_mcp` 和 `tests` 文件名：
 
 ```text
 .
@@ -24,19 +25,20 @@
 ├── pyproject.toml
 ├── config.example.yaml
 ├── smoke_test.py
-├── src/clihost_mcp/
-│   ├── __init__.py
-│   ├── cli.py
-│   ├── config.py
-│   ├── registry.py
-│   ├── runner.py
-│   ├── server.py
-│   └── adapters/
+├── src/
+│   └── clihost_mcp/
 │       ├── __init__.py
-│       ├── base.py
-│       ├── claude_code.py
-│       ├── codex.py
-│       └── shell.py
+│       ├── cli.py
+│       ├── config.py
+│       ├── registry.py
+│       ├── runner.py
+│       ├── server.py
+│       └── adapters/
+│           ├── __init__.py
+│           ├── base.py
+│           ├── claude_code.py
+│           ├── codex.py
+│           └── shell.py
 └── tests/
     ├── __init__.py
     ├── test_adapters.py
@@ -116,14 +118,15 @@ pytest
 
 - 配置解析顺序：`--config` > `CLIHOST_MCP_CONFIG` > `~/.clihost_mcp/config.yaml` > 内置默认值。
 - `config.example.yaml` 可复制到 `~/.clihost_mcp/config.yaml`，也可通过 `--config <path>` 指定。
-- 代码内置默认值在 README 中列为：`timeout_sec=120`、`max_timeout_sec=600`、`max_output_bytes=102400`、`shell.enabled=false`。
+- README 列出的内置默认值包括：`timeout_sec=120`、`max_timeout_sec=600`、`max_output_bytes=102400`、`shell.enabled=false`。
 - `config.example.yaml` 示例中 `max_timeout_sec` 为 `1800`，用于较长的 agentic CLI 调用。
 - `defaults.default_cwd` 是调用方未传 `cwd` 时的运行目录；启动时要求存在且是目录。如果 `cwd_allowlist` 非空，它还必须位于 allowlist 内。
 - `defaults.cwd_allowlist` 非空时，调用方传入的 `cwd` 必须位于允许前缀内。
 - `defaults.env_passthrough` 为空时继承完整父环境；非空时只透传列出的变量加基础环境变量。
 - `defaults.proxy` 支持字符串或 mapping（`url` / `http` / `https` / `no_proxy`），会在每次 subprocess 启动时注入 proxy env，且不受 `env_passthrough` 过滤。
+- `transport.default` 示例值为 `stdio`；HTTP 模式可通过 CLI 参数启用。
 - `transport.http.auth_token` 在 HTTP 非 localhost 绑定时是强制要求。
-- `custom_adapters` 中每个条目会注册为 `<name>_run` MCP tool；`argv_template` 使用 `{prompt}` 替换调用方 prompt。
+- `custom_adapters` 中每个启用条目会注册为 `<name>_run` MCP tool；`argv_template` 使用 `{prompt}` 替换调用方 prompt。
 
 ## 工具与返回值
 
@@ -143,7 +146,7 @@ README 列出的 MCP tools：
 - 使用现代 Python 类型标注和 `pathlib.Path`；涉及路径或命令解析时注意 Windows。
 - 不要引入 `shell=True`，不要把命令拼成 shell 字符串执行。
 - 新增依赖前确认必要性，并同步更新 `pyproject.toml` 和相关文档。
-- 当前项目依赖见 `pyproject.toml`：运行依赖为 `fastmcp`、`pydantic`、`pyyaml`；dev 依赖为 `pytest`、`pytest-asyncio`。
+- 当前运行依赖为 `fastmcp>=2.0`、`pydantic>=2.0`、`pyyaml>=6.0`；dev 依赖为 `pytest>=8.0`、`pytest-asyncio>=0.23`。
 - 当前项目未声明 ruff、black、mypy 等固定工具；不要把它们当作必须步骤，除非后续配置文件明确加入。
 - 保持 README、`config.example.yaml`、CLI 参数和实际行为一致。若发现不一致，优先修正实际偏差或文档。
 
